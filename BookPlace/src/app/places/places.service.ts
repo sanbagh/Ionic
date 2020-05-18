@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class PlacesService {
-  places: Place[] = [
+  private places: Place[] = [
     new Place(
       'p1',
       'Manhattan Mansion',
@@ -31,5 +31,8 @@ export class PlacesService {
   constructor() {}
   getPlaces() {
     return [...this.places];
+  }
+  getPlace(id: string): Place {
+    return { ...this.places.find((x) => x.id === id) };
   }
 }
