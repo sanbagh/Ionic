@@ -48,7 +48,7 @@ export class PlaceDetailPage implements OnInit {
     this.mc
       .create({
         component: CreateBookingComponent,
-        componentProps: { selectedPlace: this.place },
+        componentProps: { selectedPlace: this.place, selectedMode: val },
       })
       .then((mele) => {
         mele.present();
