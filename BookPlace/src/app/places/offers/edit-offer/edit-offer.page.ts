@@ -1,7 +1,7 @@
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlacesService } from './../../places.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Place } from '../../place';
 import { LoadingController } from '@ionic/angular';
 
@@ -10,9 +10,10 @@ import { LoadingController } from '@ionic/angular';
   templateUrl: './edit-offer.page.html',
   styleUrls: ['./edit-offer.page.scss'],
 })
-export class EditOfferPage implements OnInit {
+export class EditOfferPage implements OnInit, OnDestroy {
   formGroup: FormGroup;
   offer: Place;
+  subscription: any;
   constructor(
     private acRoute: ActivatedRoute,
     private service: PlacesService,
@@ -25,22 +26,32 @@ export class EditOfferPage implements OnInit {
       if (!x.has('id')) {
         return;
       }
-      this.offer = this.service.getPlace(x.get('id'));
-
-      this.formGroup = new FormGroup({
-        title: new FormControl(this.offer.title, {
-          updateOn: 'blur',
-          validators: [Validators.required],
-        }),
-        description: new FormControl(this.offer.description, {
-          updateOn: 'blur',
-          validators: [Validators.required, Validators.maxLength(180)],
-        }),
+      this.lc.create({ message: 'Loading place. Please wait' }).then((ele) => {
+        ele.present();
+        this.subscription = this.service
+          .getPlace(x.get('id'))
+          .subscribe((y) => {
+            this.offer = y;
+            ele.dismiss();
+            this.formGroup = new FormGroup({
+              title: new FormControl(this.offer.title, {
+                updateOn: 'blur',
+                validators: [Validators.required],
+              }),
+              description: new FormControl(this.offer.description, {
+                updateOn: 'blur',
+                validators: [Validators.required, Validators.maxLength(180)],
+              }),
+            });
+          });
       });
     });
   }
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
   saveOffer() {
-    if (this.formGroup.invalid) {
+    if (this.formGroup === null || this.formGroup.invalid) {
       return;
     }
     this.lc.create({ message: 'saving place...' }).then((x) => {

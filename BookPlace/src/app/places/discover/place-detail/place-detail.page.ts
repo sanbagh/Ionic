@@ -1,9 +1,10 @@
+import { Subscription } from 'rxjs';
 import { AuthService } from './../../../auth/auth.service';
 import { BookingService } from './../../../bookings/booking.service';
 import { ActivatedRoute } from '@angular/router';
 import { PlacesService } from './../../places.service';
 import { CreateBookingComponent } from './../../../bookings/create-booking/create-booking.component';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   ModalController,
   ActionSheetController,
@@ -16,9 +17,10 @@ import { Place } from '../../place';
   templateUrl: './place-detail.page.html',
   styleUrls: ['./place-detail.page.scss'],
 })
-export class PlaceDetailPage implements OnInit {
+export class PlaceDetailPage implements OnInit, OnDestroy {
   place: Place;
   bookable = false;
+  subscription: Subscription;
   constructor(
     private mc: ModalController,
     private acRoute: ActivatedRoute,
@@ -34,9 +36,22 @@ export class PlaceDetailPage implements OnInit {
       if (!x.has('id')) {
         return;
       }
-      this.place = this.service.getPlace(x.get('id'));
-      this.bookable = this.place.userId !== this.authService.getUserId;
+      this.lc.create({ message: 'Loading place. Please wait' }).then((ele) => {
+        ele.present();
+        this.subscription = this.service
+          .getPlace(x.get('id'))
+          .subscribe((y) => {
+            this.place = y;
+            this.place.toDate = new Date(this.place.toDate);
+            this.place.fromDate = new Date(this.place.fromDate);
+            this.bookable = this.place.userId !== this.authService.getUserId;
+            ele.dismiss();
+          });
+      });
     });
+  }
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
   bookPlace() {
     this.actionSheetctrl

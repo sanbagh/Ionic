@@ -41,7 +41,7 @@ export class CreateBookingComponent implements OnInit {
     this.mc.dismiss(null, 'cancel');
   }
   bookPlace() {
-    if (this.form.invalid || !this.dateValid()) {
+    if ((this.form === null && this.form.invalid) || !this.dateValid()) {
       return;
     }
     this.mc.dismiss(

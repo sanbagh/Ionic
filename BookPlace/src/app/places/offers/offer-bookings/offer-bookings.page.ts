@@ -1,5 +1,6 @@
+import { LoadingController } from '@ionic/angular';
 import { PlacesService } from './../../places.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Place } from '../../place';
 
@@ -8,11 +9,13 @@ import { Place } from '../../place';
   templateUrl: './offer-bookings.page.html',
   styleUrls: ['./offer-bookings.page.scss'],
 })
-export class OfferBookingsPage implements OnInit {
+export class OfferBookingsPage implements OnInit, OnDestroy {
   place: Place;
+  subscription: any;
   constructor(
     private acRoute: ActivatedRoute,
-    private service: PlacesService
+    private service: PlacesService,
+    private lc: LoadingController
   ) {}
 
   ngOnInit() {
@@ -20,7 +23,18 @@ export class OfferBookingsPage implements OnInit {
       if (!x.has('id')) {
         return;
       }
-      this.place = this.service.getPlace(x.get('id'));
+      this.lc.create({ message: 'Loading place. Please wait' }).then((ele) => {
+        ele.present();
+        this.subscription = this.service
+          .getPlace(x.get('id'))
+          .subscribe((y) => {
+            this.place = y;
+            ele.dismiss();
+          });
+      });
     });
+  }
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 }
