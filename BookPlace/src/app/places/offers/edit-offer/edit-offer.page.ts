@@ -1,8 +1,9 @@
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PlacesService } from './../../places.service';
 import { Component, OnInit } from '@angular/core';
 import { Place } from '../../place';
+import { LoadingController } from '@ionic/angular';
 
 @Component({
   selector: 'app-edit-offer',
@@ -14,7 +15,9 @@ export class EditOfferPage implements OnInit {
   offer: Place;
   constructor(
     private acRoute: ActivatedRoute,
-    private service: PlacesService
+    private service: PlacesService,
+    private router: Router,
+    private lc: LoadingController
   ) {}
 
   ngOnInit() {
@@ -40,5 +43,16 @@ export class EditOfferPage implements OnInit {
     if (this.formGroup.invalid) {
       return;
     }
+    this.lc.create({ message: 'saving place...' }).then((x) => {
+      x.present();
+      this.service.updatePlace(
+        this.offer.id,
+        this.formGroup.value.title,
+        this.formGroup.value.description
+      );
+      this.formGroup.reset();
+      x.dismiss();
+      this.router.navigate(['/places/tabs/offers']);
+    });
   }
 }

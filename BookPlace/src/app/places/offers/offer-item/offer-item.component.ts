@@ -1,3 +1,4 @@
+import { Place } from './../../place';
 import { Component, OnInit, Input } from '@angular/core';
 
 @Component({
@@ -6,12 +7,8 @@ import { Component, OnInit, Input } from '@angular/core';
   styleUrls: ['./offer-item.component.scss'],
 })
 export class OfferItemComponent implements OnInit {
-  @Input() offer;
-  date = Date.now();
+  @Input() offer: Place;
   constructor() { }
 
   ngOnInit() {}
-  getDate() {
-    return this.date;
-  }
 }

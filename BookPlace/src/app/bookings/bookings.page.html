@@ -8,7 +8,14 @@
 </ion-header>
 
 <ion-content>
-  <ion-grid>
+  <ion-grid *ngIf="!bookings ||bookings.length === 0">
+    <ion-row>
+      <ion-col size-md="6" offset-md="2">
+        No Bookings...
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-grid *ngIf="bookings.length > 0">
     <ion-row>
       <ion-col size-md="6" offset-md="2">
         <ion-list>

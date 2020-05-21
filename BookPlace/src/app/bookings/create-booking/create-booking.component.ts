@@ -48,14 +48,17 @@ export class CreateBookingComponent implements OnInit {
       {
         firstName: this.form.value.firstName,
         lastName: this.form.value.lastName,
-        guests: this.form.value.guests,
-        fromDate: this.form.value.fromDate,
-        toDate: this.form.value.toDate,
+        guests: +this.form.value.guests,
+        fromDate: new Date(this.form.value.fromDate),
+        toDate: new Date(this.form.value.toDate),
       },
       'confirm'
     );
   }
   dateValid() {
+    if (!this.form || this.form === null) {
+      return;
+    }
     const fromDate = this.form.value.fromDate;
     const toDate = this.form.value.toDate;
     return toDate > fromDate;
