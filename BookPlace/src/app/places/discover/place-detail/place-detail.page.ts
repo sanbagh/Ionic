@@ -1,3 +1,4 @@
+import { MapModalComponent } from './../../../shared/map-modal/map-modal.component';
 import { Subscription } from 'rxjs';
 import { AuthService } from './../../../auth/auth.service';
 import { BookingService } from './../../../bookings/booking.service';
@@ -100,6 +101,19 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
               x.dismiss();
             });
         }
+      });
+  }
+  openMapModel() {
+    this.mc
+      .create({
+        component: MapModalComponent,
+        componentProps: {
+          lat: this.place.location?.lat,
+          lng: this.place.location?.lng,
+        },
+      })
+      .then((ele) => {
+        ele.present();
       });
   }
 }

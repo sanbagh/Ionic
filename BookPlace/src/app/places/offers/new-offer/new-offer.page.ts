@@ -1,3 +1,4 @@
+import { PlcaeLocation } from './../location';
 import { PlacesService } from './../../places.service';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
@@ -40,6 +41,10 @@ export class NewOfferPage implements OnInit {
         updateOn: 'blur',
         validators: [Validators.required],
       }),
+      location: new FormControl(null, {
+        updateOn: 'blur',
+        validators: [Validators.required],
+      }),
     });
   }
   createOffer() {
@@ -55,12 +60,16 @@ export class NewOfferPage implements OnInit {
           +this.formGroup.value.price,
           this.formGroup.value.availableFrom,
           this.formGroup.value.availableTo,
-          null
+          null,
+          this.formGroup.value.location
         );
         this.service.addPlace(place);
         this.formGroup.reset();
         x.dismiss();
         this.router.navigate(['/places/tabs/offers']);
       });
+  }
+  locationPicked(placelocation: PlcaeLocation) {
+    this.formGroup.patchValue({ location: placelocation });
   }
 }

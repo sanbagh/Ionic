@@ -1,3 +1,4 @@
+import { SharedModule } from './../../../shared/shared.module';
 import { CreateBookingComponent } from './../../../bookings/create-booking/create-booking.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -14,6 +15,7 @@ import { PlaceDetailPage } from './place-detail.page';
     CommonModule,
     FormsModule,
     IonicModule,
+    SharedModule,
     PlaceDetailPageRoutingModule,
   ],
   declarations: [PlaceDetailPage, CreateBookingComponent],

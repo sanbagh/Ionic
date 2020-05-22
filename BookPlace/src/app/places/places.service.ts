@@ -38,7 +38,8 @@ export class PlacesService {
                 data.price,
                 data.fromDate,
                 data.toDate,
-                data.userId
+                data.userId,
+                data.location
               );
               places.push(place);
             }
@@ -64,7 +65,8 @@ export class PlacesService {
           y.price,
           y.fromDate,
           y.toDate,
-          y.userId
+          y.userId,
+          y.location,
         );
       })
     );

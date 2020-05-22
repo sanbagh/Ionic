@@ -1,0 +1,8 @@
+<div class="ion-text-center">
+  <div class="mapImage" *ngIf="staticImageUrl">
+    <ion-img [src]="staticImageUrl"></ion-img>
+  </div>
+  <ion-button color="primary" (click)="onPickLocation()">
+    <ion-icon name="map" slot="start"></ion-icon>Pick Location
+  </ion-button>
+</div>

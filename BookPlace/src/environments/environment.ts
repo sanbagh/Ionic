@@ -4,7 +4,11 @@
 
 export const environment = {
   production: false,
-  url:'https://bookplace-4ca58.firebaseio.com/'
+  url: 'https://bookplace-4ca58.firebaseio.com/',
+  mapbox: {
+    accessToken:
+      'pk.eyJ1Ijoic2FuYmFnaCIsImEiOiJjazdnaWZ3MnkwMDFzM2xwODE4ZGZ2NTljIn0.N_4NpltJgDFzZbRGT_1Pwg',
+  },
 };
 
 /*

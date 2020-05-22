@@ -1,3 +1,4 @@
+import { SharedModule } from './../../../shared/shared.module';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -13,8 +14,9 @@ import { NewOfferPage } from './new-offer.page';
     CommonModule,
     ReactiveFormsModule,
     IonicModule,
-    NewOfferPageRoutingModule
+    NewOfferPageRoutingModule,
+    SharedModule,
   ],
-  declarations: [NewOfferPage]
+  declarations: [NewOfferPage],
 })
 export class NewOfferPageModule {}

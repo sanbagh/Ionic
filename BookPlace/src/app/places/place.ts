@@ -1,3 +1,4 @@
+import { PlcaeLocation } from './offers/location';
 export class Place {
   constructor(
     public id: string,
@@ -7,6 +8,7 @@ export class Place {
     public price: number,
     public fromDate: Date,
     public toDate: Date,
-    public userId: string
+    public userId: string,
+    public location: PlcaeLocation
   ) {}
 }
