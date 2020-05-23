@@ -2,10 +2,10 @@ import { LoadingController } from '@ionic/angular';
 import { environment } from './../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from './../auth/auth.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { Booking } from './booking';
 import { Injectable } from '@angular/core';
-import { map } from 'rxjs/operators';
+import { map, switchMap, tap } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class BookingService {
@@ -18,25 +18,36 @@ export class BookingService {
     private lc: LoadingController
   ) {}
   get bookings() {
-    this.lc.create({ message: 'Loading places. Please wait..' }).then((x) => {
+    this.lc.create({ message: 'Loading bookings. Please wait..' }).then((x) => {
       x.present();
-      this.client
-        .get(
-          this.url +
-            'bookings.json?orderBy="userId"&equalTo="' +
-            this.service.getUserId +
-            '"'
-        )
+      let id;
+      this.service.getUserId
         .pipe(
+          switchMap((userId) => {
+            id = userId;
+            return this.service.token.pipe(
+              switchMap((token) => {
+                return this.client.get(
+                  this.url +
+                    'bookings.json?auth=' +
+                    token +
+                    '&orderBy="userId"&equalTo="' +
+                    userId +
+                    '"'
+                );
+              })
+            );
+          }),
           map((y: [{ key: string; place: any }]) => {
             const bookings: Booking[] = [];
+            let booking = null;
             if (y !== null) {
               for (const key of Object.keys(y)) {
                 const data: Booking = y[key];
-                const booking = new Booking(
+                booking = new Booking(
                   key,
                   data.placeId,
-                  this.service.getUserId,
+                  id,
                   data.placeTitle,
                   data.placeImage,
                   data.firstName,
@@ -72,7 +83,7 @@ export class BookingService {
     const booking = new Booking(
       null,
       placeId,
-      this.service.getUserId,
+      null,
       placeTitle,
       placeImage,
       firstName,
@@ -81,8 +92,27 @@ export class BookingService {
       bookedFrom,
       bookedTo
     );
-    this.client
-      .post(this.url + 'bookings.json', { ...booking, id: null })
+
+    this.service.getUserId
+      .pipe(
+        switchMap((userId) => {
+          if (!userId) {
+            throw new Error('no user id found');
+          }
+          booking.userId = userId;
+          return this.service.token.pipe(
+            switchMap((token) => {
+              return this.client.post(
+                this.url + 'bookings.json?auth=' + token,
+                {
+                  ...booking,
+                  id: null,
+                }
+              );
+            })
+          );
+        })
+      )
       .subscribe((x: any) => {
         booking.id = x.name;
         this.data.push(booking);
@@ -90,9 +120,17 @@ export class BookingService {
       });
   }
   cancelBooking(id: string) {
-    this.client.delete(this.url + 'bookings/' + id + '.json').subscribe((x) => {
-      this.data = this.data.filter((y) => y.id !== id);
-      this.subject.next([...this.data]);
-    });
+    this.service.token
+      .pipe(
+        switchMap((token) => {
+          return this.client.delete(
+            this.url + 'bookings/' + id + '.json?auth=' + token
+          );
+        })
+      )
+      .subscribe((x) => {
+        this.data = this.data.filter((y) => y.id !== id);
+        this.subject.next([...this.data]);
+      });
   }
 }

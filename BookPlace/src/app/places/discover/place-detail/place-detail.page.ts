@@ -1,3 +1,4 @@
+import { switchMap } from 'rxjs/operators';
 import { MapModalComponent } from './../../../shared/map-modal/map-modal.component';
 import { Subscription } from 'rxjs';
 import { AuthService } from './../../../auth/auth.service';
@@ -39,20 +40,28 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
       }
       this.lc.create({ message: 'Loading place. Please wait' }).then((ele) => {
         ele.present();
-        this.subscription = this.service
-          .getPlace(x.get('id'))
+        this.authService.getUserId
+          .pipe(
+            switchMap((userId) => {
+              if (!userId) {
+                this.bookable = this.place.userId !== userId;
+              }
+              return this.service.getPlace(x.get('id'));
+            })
+          )
           .subscribe((y) => {
             this.place = y;
             this.place.toDate = new Date(this.place.toDate);
             this.place.fromDate = new Date(this.place.fromDate);
-            this.bookable = this.place.userId !== this.authService.getUserId;
             ele.dismiss();
           });
       });
     });
   }
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
   bookPlace() {
     this.actionSheetctrl

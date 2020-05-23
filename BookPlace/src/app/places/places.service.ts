@@ -4,7 +4,7 @@ import { AuthService } from './../auth/auth.service';
 import { Place } from './place';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
@@ -23,9 +23,13 @@ export class PlacesService {
   getPlaces() {
     this.lc.create({ message: 'Loading places. Please wait..' }).then((x) => {
       x.present();
-      this.client
-        .get(this.url + 'offer-places.json')
+      this.authService.token
         .pipe(
+          switchMap((token) => {
+            return this.client.get(
+              this.url + 'offer-places.json?auth=' + token
+            );
+          }),
           map((y: [{ key: string; place: any }]) => {
             const places: Place[] = [];
             for (const key of Object.keys(y)) {
@@ -55,7 +59,12 @@ export class PlacesService {
     return this.subject.asObservable();
   }
   getPlace(id: string) {
-    return this.client.get(this.url + 'offer-places/' + id + '.json').pipe(
+    return this.authService.token.pipe(
+      switchMap((token) => {
+        return this.client.get(
+          this.url + 'offer-places/' + id + '.json?auth=' + token
+        );
+      }),
       map((y: any) => {
         return new Place(
           id,
@@ -66,7 +75,20 @@ export class PlacesService {
           y.fromDate,
           y.toDate,
           y.userId,
-          y.location,
+          y.location
+        );
+      })
+    );
+  }
+  uploadImage(image: File) {
+    const formData = new FormData();
+    formData.append('image', image);
+    return this.authService.token.pipe(
+      switchMap((token) => {
+        return this.client.post<{ imageUrl: string; imagePath: string }>(
+          'https://us-central1-bookplace-4ca58.cloudfunctions.net/storeImage',
+          formData,
+          { headers: { Authorization: 'Bearer ' + token } }
         );
       })
     );
@@ -76,16 +98,28 @@ export class PlacesService {
       return;
     }
     // place.id = Math.random().toString();
-    place.imageUrl =
-      'https://lonelyplanetimages.imgix.net/mastheads/GettyImages-538096543_medium.jpg?sharp=10&vib=20&w=1200';
-    place.userId = this.authService.getUserId;
-    this.client
-      .post(this.url + 'offer-places.json', { ...place, id: null })
-      .subscribe((x: any) => {
-        place.id = x.name;
-        this.places.push(place);
-        this.subject.next([...this.places]);
-      });
+    // place.imageUrl =
+    //   'https://lonelyplanetimages.imgix.net/mastheads/GettyImages-538096543_medium.jpg?sharp=10&vib=20&w=1200';
+    this.authService.getUserId.subscribe((userId) => {
+      place.userId = userId;
+      this.authService.token
+        .pipe(
+          switchMap((token) => {
+            return this.client.post(
+              this.url + 'offer-places.json?auth=' + token,
+              {
+                ...place,
+                id: null,
+              }
+            );
+          })
+        )
+        .subscribe((x: any) => {
+          place.id = x.name;
+          this.places.push(place);
+          this.subject.next([...this.places]);
+        });
+    });
   }
   updatePlace(id: string, title: string, desc: string) {
     const index = this.places.findIndex((x) => x.id === id);
@@ -96,11 +130,19 @@ export class PlacesService {
     this.places[index].description = desc;
     this.lc.create({ message: 'Updating place. Please wait...' }).then((x) => {
       x.present();
-      this.client
-        .put(this.url + 'offer-places/' + id + '.json', {
-          ...this.places[index],
-          id: null,
-        })
+
+      this.authService.token
+        .pipe(
+          switchMap((token) => {
+            return this.client.put(
+              this.url + 'offer-places/' + id + '.json?auth=' + token,
+              {
+                ...this.places[index],
+                id: null,
+              }
+            );
+          })
+        )
         .subscribe((y) => {
           this.subject.next([...this.places]);
           x.dismiss();
